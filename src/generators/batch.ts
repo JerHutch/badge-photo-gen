@@ -187,6 +187,9 @@ export async function generateBatch(params: GenerationParams): Promise<void> {
       result.gender = gender;
       result.path = filepath;
 
+      // Remove base64Data before adding to manifest (it's already saved to file)
+      delete (result as any).base64Data;
+
       // Add to results
       results.push(result);
 
