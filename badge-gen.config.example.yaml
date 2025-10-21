@@ -1,0 +1,44 @@
+# Badge Photo Generator Configuration
+# Copy this file and customize for your needs
+
+# Stability AI API Configuration
+# Get your API key from: https://platform.stability.ai/account/keys
+api_key: YOUR_API_KEY_HERE  # Or use STABILITY_API_KEY environment variable
+
+# Budget Management
+# Tracks spending across all runs to prevent overspending
+budget:
+  total: 100.00           # Total budget in USD
+  spent: 0.00             # Automatically updated after each generation
+  warn_threshold: 0.8     # Warn when 80% of budget is used
+
+# Default Generation Settings
+# These can be overridden by CLI flags
+defaults:
+  count: 50               # Number of images to generate
+  style: corporate        # Art style: bitmoji, pixar, corporate, vector-art, anime, pixel-art
+  format: png             # Output format: png or jpg
+  output_dir: ./badges    # Where to save generated images
+
+# Dimension Constraints
+# Controls random image sizing within bounds
+dimensions:
+  min_width: 900          # Minimum image width in pixels
+  min_height: 800         # Minimum image height in pixels
+  max_width: 2100         # Maximum image width in pixels
+  max_height: 1500        # Maximum image height in pixels
+  maintain_portrait: true # Keep portrait aspect ratio (height >= width)
+
+# Retry Configuration
+# Handles API failures with exponential backoff
+retry:
+  max_attempts: 3         # Maximum number of retry attempts
+  initial_delay_ms: 1000  # Initial delay before retry (1 second)
+  max_delay_ms: 10000     # Maximum delay between retries (10 seconds)
+  backoff_multiplier: 2   # Delay multiplier for each retry
+
+# Gender Distribution
+# Controls how images are split by gender
+gender:
+  male_ratio: 0.5         # 50% male-presenting images
+  female_ratio: 0.5       # 50% female-presenting images
