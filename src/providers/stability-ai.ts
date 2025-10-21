@@ -18,8 +18,57 @@ export class StabilityAIProvider extends BaseImageProvider {
   }
 
   async generateImage(params: ImageGenerationParams): Promise<ImageResult> {
-    // TODO: Implement Stability AI API call
-    throw new Error('Not implemented yet');
+    const endpoint = `${this.baseUrl}/${this.engine}/text-to-image`;
+
+    const requestBody = {
+      text_prompts: [
+        {
+          text: params.prompt,
+          weight: 1
+        }
+      ],
+      cfg_scale: 7,
+      height: params.height,
+      width: params.width,
+      samples: 1,
+      steps: 30
+    };
+
+    const response = await axios.post(endpoint, requestBody, {
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Extract base64 encoded image data
+    const base64Image = response.data.artifacts[0].base64;
+
+    // For now, return a placeholder ImageResult
+    // File saving will be handled by the batch generator
+    const result: ImageResult = {
+      id: `stability-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      gender: 'male', // This will be determined by the batch generator
+      path: '', // Will be set when file is saved
+      dimensions: {
+        width: params.width,
+        height: params.height,
+        requestedMin: `${params.width}x${params.height}`,
+        requestedMax: `${params.width}x${params.height}`,
+        actualAiSize: `${params.width}x${params.height}`
+      },
+      prompt: params.prompt,
+      style: params.style,
+      generatedAt: new Date().toISOString(),
+      provider: this.name,
+      model: this.engine
+    };
+
+    // Attach the base64 data to the result for later processing
+    // We'll add this as a custom property that the batch generator can use
+    (result as any).base64Data = base64Image;
+
+    return result;
   }
 
   estimateCost(count: number): number {
