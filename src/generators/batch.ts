@@ -11,6 +11,7 @@ import { generateUUID } from '../utils/uuid';
 import { createManifest, saveManifest } from '../utils/manifest';
 import { checkBudget, updateBudgetSpent, formatBudgetCheck } from '../config/budget';
 import { retryWithBackoff } from '../utils/retry';
+import { logger } from '../utils/logger';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import sharp from 'sharp';
@@ -72,8 +73,8 @@ async function loadFullConfig(configPath: string): Promise<Config> {
  * Main batch generation function
  */
 export async function generateBatch(params: GenerationParams): Promise<void> {
-  console.log('Starting batch generation...');
-  console.log(`Generating ${params.count} images in ${params.style} style`);
+  logger.info('Starting batch generation...');
+  logger.info(`Generating ${params.count} images in ${params.style} style`);
 
   // === STEP A: BUDGET CHECK ===
   const configPath = 'badge-gen.config.yaml';
@@ -101,18 +102,18 @@ export async function generateBatch(params: GenerationParams): Promise<void> {
   }
 
   // Display budget information to user
-  console.log('\n' + formatBudgetCheck(
+  logger.info('\n' + formatBudgetCheck(
     config.budget.total,
     config.budget.spent,
     estimatedCost
   ));
-  console.log('');
+  logger.info('');
 
   // === STEP B: CALCULATE GENDER DISTRIBUTION ===
   const maleCount = Math.ceil(params.count / 2);
   const femaleCount = Math.floor(params.count / 2);
 
-  console.log(`Gender distribution: ${maleCount} male, ${femaleCount} female\n`);
+  logger.info(`Gender distribution: ${maleCount} male, ${femaleCount} female\n`);
 
   // === STEP C: CREATE OUTPUT DIRECTORIES ===
   const maleDir = path.join(params.outputDir, 'male');
@@ -122,7 +123,7 @@ export async function generateBatch(params: GenerationParams): Promise<void> {
   await fs.mkdir(maleDir, { recursive: true });
   await fs.mkdir(femaleDir, { recursive: true });
 
-  console.log(`Output directories created at ${params.outputDir}\n`);
+  logger.info(`Output directories created at ${params.outputDir}\n`);
 
   // === STEP D: GENERATE IMAGES ===
   const results: ImageResult[] = [];
@@ -148,7 +149,7 @@ export async function generateBatch(params: GenerationParams): Promise<void> {
         supportedDimensions
       );
 
-      console.log(`Generating image ${i + 1}/${params.count} (${gender}, ${dimensions.width}x${dimensions.height})...`);
+      logger.info(`Generating image ${i + 1}/${params.count} (${gender}, ${dimensions.width}x${dimensions.height})...`);
 
       // Generate image with retry logic
       const result = await retryWithBackoff(
@@ -189,25 +190,24 @@ export async function generateBatch(params: GenerationParams): Promise<void> {
       // Add to results
       results.push(result);
 
-      console.log(`  Saved: ${filepath}`);
+      logger.info(`  Saved: ${filepath}`);
 
     } catch (error) {
-      console.error(`\nError generating image ${i + 1}/${params.count}:`,
-        error instanceof Error ? error.message : String(error));
+      logger.error(`Error generating image ${i + 1}/${params.count}: ${error instanceof Error ? error.message : String(error)}`);
 
       // Check if budget was exceeded during generation
       const currentSpent = config.budget.spent + (results.length * (estimatedCost / params.count));
       if (currentSpent >= config.budget.total) {
-        console.error('\nBudget exceeded during batch generation. Stopping...');
+        logger.error('\nBudget exceeded during batch generation. Stopping...');
         break;
       }
 
       // Otherwise, continue with next image
-      console.log('Continuing with next image...\n');
+      logger.info('Continuing with next image...\n');
     }
   }
 
-  console.log(`\nGeneration complete: ${results.length}/${params.count} images generated`);
+  logger.info(`\nGeneration complete: ${results.length}/${params.count} images generated`);
 
   // === STEP E: CREATE MANIFEST ===
   const metadata: ManifestMetadata = {
@@ -224,17 +224,17 @@ export async function generateBatch(params: GenerationParams): Promise<void> {
   const manifest = createManifest(metadata, results);
   await saveManifest(params.outputDir, manifest);
 
-  console.log(`Manifest saved to ${path.join(params.outputDir, 'manifest.json')}\n`);
+  logger.info(`Manifest saved to ${path.join(params.outputDir, 'manifest.json')}\n`);
 
   // === STEP F: UPDATE BUDGET ===
   const actualCost = results.length * (estimatedCost / params.count);
   await updateBudgetSpent(configPath, actualCost);
 
-  console.log('=== Generation Summary ===');
-  console.log(`Total images: ${results.length}`);
-  console.log(`Male: ${metadata.maleCount}`);
-  console.log(`Female: ${metadata.femaleCount}`);
-  console.log(`Cost: $${actualCost.toFixed(4)}`);
-  console.log(`Output: ${params.outputDir}`);
-  console.log('==========================\n');
+  logger.info('=== Generation Summary ===');
+  logger.info(`Total images: ${results.length}`);
+  logger.info(`Male: ${metadata.maleCount}`);
+  logger.info(`Female: ${metadata.femaleCount}`);
+  logger.info(`Cost: $${actualCost.toFixed(4)}`);
+  logger.info(`Output: ${params.outputDir}`);
+  logger.info('==========================\n');
 }

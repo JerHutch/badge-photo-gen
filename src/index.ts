@@ -5,9 +5,15 @@
  * Main entry point for the badge-gen command
  */
 
+import dotenv from 'dotenv';
 import { Command } from 'commander';
 import { generateBatch } from './generators/batch';
 import { loadConfig } from './config/loader';
+import { logger } from './utils/logger';
+
+// Load environment variables from .env.local or .env
+dotenv.config({ path: '.env.local' });
+dotenv.config();
 
 const program = new Command();
 
@@ -32,14 +38,10 @@ program
       // Load configuration
       const config = await loadConfig(options.config, options);
 
-      // TODO: Implement batch generation
-      console.log('Badge generation starting...');
-      console.log('Options:', options);
-      console.log('Config loaded successfully');
-
-      // await generateBatch(config);
+      // Generate badge photos
+      await generateBatch(config);
     } catch (error) {
-      console.error('Error:', error instanceof Error ? error.message : error);
+      logger.error('Error:', error instanceof Error ? error.message : error);
       process.exit(1);
     }
   });

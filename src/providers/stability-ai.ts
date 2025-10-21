@@ -5,6 +5,7 @@
 import axios from 'axios';
 import { BaseImageProvider } from './base';
 import { Dimension, ImageGenerationParams, ImageResult } from '../types';
+import { logger } from '../utils/logger';
 
 export class StabilityAIProvider extends BaseImageProvider {
   name = 'stability-ai';
@@ -34,15 +35,17 @@ export class StabilityAIProvider extends BaseImageProvider {
       steps: 30
     };
 
-    const response = await axios.post(endpoint, requestBody, {
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    try {
+      const response = await axios.post(endpoint, requestBody, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
 
-    // Extract base64 encoded image data
-    const base64Image = response.data.artifacts[0].base64;
+      // Extract base64 encoded image data
+      const base64Image = response.data.artifacts[0].base64;
 
     // For now, return a placeholder ImageResult
     // File saving will be handled by the batch generator
@@ -64,11 +67,21 @@ export class StabilityAIProvider extends BaseImageProvider {
       model: this.engine
     };
 
-    // Attach the base64 data to the result for later processing
-    // We'll add this as a custom property that the batch generator can use
-    (result as any).base64Data = base64Image;
+      // Attach the base64 data to the result for later processing
+      // We'll add this as a custom property that the batch generator can use
+      (result as any).base64Data = base64Image;
 
-    return result;
+      return result;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const statusCode = error.response?.status;
+        const errorData = error.response?.data;
+        throw new Error(
+          `Stability AI API error (${statusCode}): ${JSON.stringify(errorData) || error.message}`
+        );
+      }
+      throw error;
+    }
   }
 
   estimateCost(count: number): number {

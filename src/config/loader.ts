@@ -7,6 +7,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import YAML from 'yaml';
 import { Config, GenerationParams } from '../types';
+import { logger } from '../utils/logger';
 
 export async function loadConfig(
   configPath: string,
@@ -20,7 +21,7 @@ export async function loadConfig(
     fileConfig = YAML.parse(configContent);
   } catch (error) {
     // Config file is optional, continue with defaults
-    console.log(`No config file found at ${configPath}, using defaults`);
+    logger.info(`No config file found at ${configPath}, using defaults`);
   }
 
   // Merge config file with CLI options (CLI takes precedence)
