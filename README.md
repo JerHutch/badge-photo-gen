@@ -97,7 +97,7 @@ badge-gen --budget 50 --count 500
 
 | Option | Alias | Description | Default |
 |--------|-------|-------------|---------|
-| `--count` | `-c` | Number of images to generate | `10` |
+| `--count` | `-c` | Number of images to generate | `5` |
 | `--style` | `-s` | Art style preset | `bitmoji` |
 | `--output` | `-o` | Output directory | `./badges` |
 | `--format` | `-f` | Output format (png or jpg) | `png` |
@@ -183,12 +183,12 @@ Proceed? [Y/n]
 ```
 badge-photo-gen/
 ├── src/
-│   ├── cli/              # CLI commands and options
 │   ├── providers/        # AI provider implementations
 │   ├── generators/       # Image generation logic
 │   ├── config/           # Configuration and styles
 │   ├── utils/            # Utility functions
-│   └── types/            # TypeScript type definitions
+│   ├── types/            # TypeScript type definitions
+│   └── index.ts          # CLI entry point
 ├── ART_STYLES.md         # Art style documentation
 ├── DESIGN.md             # Design document
 └── README.md             # This file
@@ -219,7 +219,7 @@ The tool is designed to support multiple AI providers. To add a new provider:
 
 1. Create a new class in `src/providers/` extending `BaseImageProvider`
 2. Implement the required methods: `generateImage()`, `estimateCost()`, `getSupportedDimensions()`
-3. Register the provider in `src/providers/registry.ts`
+3. Update `src/generators/batch.ts` to import and use the new provider
 
 See `src/providers/stability-ai.ts` for reference implementation.
 
