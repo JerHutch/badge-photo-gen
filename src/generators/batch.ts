@@ -19,16 +19,18 @@ import YAML from 'yaml';
 
 /**
  * Helper function to get random diversity attribute from array
+ * Exported for testing purposes
  */
-function randomChoice<T>(arr: T[]): T {
+export function randomChoice<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 /**
  * Diversity attribute generators
+ * Exported for testing purposes
  */
-const AGE_OPTIONS = ['young adult', 'middle-aged', 'senior'];
-const ETHNICITY_OPTIONS = [
+export const AGE_OPTIONS = ['young adult', 'middle-aged', 'senior'];
+export const ETHNICITY_OPTIONS = [
   'Asian',
   'Black',
   'Caucasian',
@@ -36,14 +38,14 @@ const ETHNICITY_OPTIONS = [
   'Middle Eastern',
   'South Asian',
 ];
-const MALE_FEATURES = [
+export const MALE_FEATURES = [
   'with glasses',
   'without glasses',
   'with beard',
   'clean-shaven',
   'with mustache',
 ];
-const FEMALE_FEATURES = [
+export const FEMALE_FEATURES = [
   'with glasses',
   'without glasses',
   'with long hair',
@@ -52,8 +54,9 @@ const FEMALE_FEATURES = [
 
 /**
  * Generate random diversity attributes for a person
+ * Exported for testing purposes
  */
-function generateDiversityAttributes(gender: 'male' | 'female'): string {
+export function generateDiversityAttributes(gender: 'male' | 'female'): string {
   const age = randomChoice(AGE_OPTIONS);
   const ethnicity = randomChoice(ETHNICITY_OPTIONS);
   const features = randomChoice(gender === 'male' ? MALE_FEATURES : FEMALE_FEATURES);
@@ -63,8 +66,9 @@ function generateDiversityAttributes(gender: 'male' | 'female'): string {
 
 /**
  * Load configuration file
+ * Exported for testing purposes
  */
-async function loadFullConfig(configPath: string): Promise<Config> {
+export async function loadFullConfig(configPath: string): Promise<Config> {
   const configContent = await fs.readFile(configPath, 'utf-8');
   return YAML.parse(configContent);
 }

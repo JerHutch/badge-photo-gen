@@ -8,6 +8,7 @@
 import dotenv from 'dotenv';
 import { Command } from 'commander';
 import { generateBatch } from './generators/batch';
+import { generateArtTest } from './generators/art-test';
 import { loadConfig } from './config/loader';
 import { logger } from './utils/logger';
 
@@ -33,13 +34,20 @@ program
   .option('-b, --budget <number>', 'Set budget limit in USD')
   .option('--dry-run', 'Preview without generating', false)
   .option('--api-key <key>', 'Stability AI API key')
+  .option('--art-test', 'Generate one sample image for each art style (ignores --count and --style)', false)
   .action(async (options) => {
     try {
       // Load configuration
       const config = await loadConfig(options.config, options);
 
-      // Generate badge photos
-      await generateBatch(config);
+      // Check if art test mode
+      if (options.artTest) {
+        logger.info('Running in art test mode\n');
+        await generateArtTest(config);
+      } else {
+        // Normal batch generation
+        await generateBatch(config);
+      }
     } catch (error) {
       logger.error('Error:', error instanceof Error ? error.message : error);
       process.exit(1);

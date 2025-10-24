@@ -22,6 +22,8 @@ export interface DefaultSettings {
   style: string;
   format: 'png' | 'jpg';
   outputDir: string;
+  minSize?: string;
+  maxSize?: string;
 }
 
 export interface DimensionConstraints {
